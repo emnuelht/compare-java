@@ -16,10 +16,8 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation(libs.junit.jupiter)
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // This dependency is used by the application.
     implementation(libs.guava)
@@ -34,7 +32,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "compare.java.App"
+    mainClass = "compare.java.Main"
 }
 
 tasks.named<Test>("test") {
