@@ -2,7 +2,9 @@ package compare.java;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("------------------------");
-        RunCompare.run();
+        String fileURI1 = "src/main/resources/values/arquivo1.json";
+        String fileURI2 = "src/main/resources/values/arquivo2.json";
+
+        System.out.println(RunCompare.run(fileURI1,fileURI2));
     }
 }

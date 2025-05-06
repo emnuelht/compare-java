@@ -11,32 +11,14 @@ import com.google.gson.JsonObject;
 
 public class RunCompare {
 
-    public static void run() {
+    public static JsonArray run(String fileURI1, String fileURI2) {
         try {
-
-            String fileURI1 = "src/main/resources/values/arquivo1.txt";
-            String fileURI2 = "src/main/resources/values/arquivo2.txt";
-
             JsonArray array = compareFiles(fileURI1,fileURI2);
-            for (JsonElement item : array) {
-                JsonObject object = item.getAsJsonObject();
-                System.out.println(object);
-            }
-            
-            System.out.println();
-            System.out.println("=================");
-            System.out.println();
-
-            JsonArray array2 = compareNewFiles(fileURI1,fileURI2);
-            for (JsonElement item : array2) {
-                JsonObject object = item.getAsJsonObject();
-                System.out.println(object);
-            }
-            
-
+            return array;
         } catch (IOException e) {
             System.out.println("Error ao ler o arquivo!");
             e.printStackTrace();
+            return new JsonArray();
         }
     }
 
@@ -54,14 +36,9 @@ public class RunCompare {
                 String line_old = listFileString1.get(i);
                 String line_new = listFileString2.get(i);
 
-                if (line_old.equals(line_new)) {
-                    object.addProperty("change", "none");
-                    object.addProperty("line", (i + 1));
-                    object.addProperty("value-old", line_old);
-                    object.addProperty("value-new", line_new);
-                } else {
+                if (!line_old.equals(line_new)) {
                     if (line_new.isEmpty()) {
-                        object.addProperty("change", "delete");
+                        object.addProperty("change", "delete-value");
                         object.addProperty("line", (i + 1));
                         object.addProperty("value-old", line_old);
                         object.addProperty("value-new", line_new);
@@ -73,17 +50,24 @@ public class RunCompare {
                     }
                 }
             } else {
-                object.addProperty("change", "delete");
+                object.addProperty("change", "delete-line");
                 object.addProperty("line", (i + 1));
                 object.addProperty("value-old", listFileString1.get(i));
                 object.addProperty("value-new", "");
             }
+            if (!object.isEmpty()) array.add(object);
+        }
+
+        JsonArray arrayNewLines = compareNewLineFiles(fileURI1,fileURI2);
+        for (JsonElement item : arrayNewLines) {
+            JsonObject object = item.getAsJsonObject();
             array.add(object);
         }
+
         return array;
     }
 
-    private static JsonArray compareNewFiles(String fileURI1, String fileURI2) throws IOException {
+    private static JsonArray compareNewLineFiles(String fileURI1, String fileURI2) throws IOException {
         String fileString1 = Files.readString(Paths.get(fileURI1));
         String fileString2 = Files.readString(Paths.get(fileURI2));
 
@@ -93,6 +77,7 @@ public class RunCompare {
         if (listFileString2.size() >= listFileString1.size()) {
             for (int i = listFileString1.size(); i < listFileString2.size(); i++) {
                 JsonObject object = new JsonObject();
+                object.addProperty("change", "add");
                 object.addProperty("line", (i + 1));
                 object.addProperty("value-new", listFileString2.get(i));
                 array.add(object);
