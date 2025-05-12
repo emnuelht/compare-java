@@ -1,0 +1,26 @@
+{
+    "table": {
+        "coluna": {
+            "type": "String",
+            "length": 10,
+            "default": "Nenhum"
+        },
+        "coluna2": {
+            "type": "Integer",
+            "length": 11,
+            "default": "Nenhum"
+        },
+        "manequinho": {
+            "type": "Timestamp",
+            "length": "none",
+            "default": "CURRENT TIMESTAMP"
+        }
+    },
+    "table2": {
+        "coluna2": {
+            "type": "String",
+            "length": 2,
+            "default": "Nenhum"
+        }
+    }
+}
