@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyStore.Entry;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
@@ -20,47 +22,39 @@ public class RunCompare {
     public static void run(String fileURI1, String fileURI2) {
         try {
             compareJson(fileURI1,fileURI2);
-            // return array;
         } catch (IOException e) {
             System.out.println("Error ao ler o arquivo!");
             e.printStackTrace();
-            // return new JsonArray();
         }
     }
 
     public static void compareJson(String fileURI1, String fileURI2) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(new File(fileURI1));
 
-        Map<String, Object> json_old = mapper.readValue(new File(fileURI1), Map.class);
-        Map<String, Object> json_new = mapper.readValue(new File(fileURI2), Map.class);
+        JsonArray array = compareFiles(fileURI1, fileURI2);
+        for (JsonElement element : array) {
+            JsonObject object = element.getAsJsonObject();
+            String line = object.get("line").getAsString();
+            String change = object.get("change").getAsString();
+            String valueNew = clearString(object.get("value-new").getAsString());
+            String valueOld = clearString(object.get("value-old").getAsString());
 
-        compareMaps("", json_old, json_new);
-    }
-
-    private static void compareMaps(String path, Map<String, Object> oldMap, Map<String, Object> newMap) {
-        for (String key : newMap.keySet()) {
-            String fullPath = path.isEmpty() ? key : path + "." + key;
-
-            if (!oldMap.containsKey(key)) {
-                System.out.println("ADDED: " + fullPath + " => " + newMap.get(key));
-            } else {
-                Object oldVal = oldMap.get(key);
-                Object newVal = newMap.get(key);
-
-                if (oldVal instanceof Map && newVal instanceof Map) {
-                    // Recursive comparison
-                    compareMaps(fullPath, (Map<String, Object>) oldVal, (Map<String, Object>) newVal);
-                } else if (!Objects.equals(oldVal, newVal)) {
-                    System.out.println("MODIFIED: " + fullPath + " | Old: " + oldVal + " | New: " + newVal);
-                }
+            if (!valueOld.isEmpty() && !valueNew.isEmpty()) {
+                System.out.println("Line: " + line);
+                System.out.println("Change: " + change);
+                System.out.println("ValueNew: " + valueNew);
+                System.out.println("ValueOld: " + valueOld);
+                System.out.println();
             }
         }
+    }
 
-        for (String key : oldMap.keySet()) {
-            if (!newMap.containsKey(key)) {
-                String fullPath = path.isEmpty() ? key : path + "." + key;
-                System.out.println("REMOVED: " + fullPath + " => " + oldMap.get(key));
-            }
+    private static String clearString(String s) {
+        if (s.contains(":") && s.contains("{")) {
+            return s.replaceAll(" ", "").replace("{", "").replace("}", "").replace(":", "").replaceAll("\"", "");
+        } else {
+            return s.replaceAll(" ", "").replace("{", "").replace("}", "").replaceAll("\"", "").replace(",", "");
         }
     }
 
@@ -76,8 +70,8 @@ public class RunCompare {
         JsonArray array = new JsonArray();
 
         for (int i = 0; i < length; i++) {
-            String line_old = i < listFileString1.size() ? listFileString1.get(i) : ".";
-            String line_new = i < listFileString2.size() ? listFileString2.get(i) : ".";
+            String line_old = i < listFileString1.size() ? listFileString1.get(i) : "";
+            String line_new = i < listFileString2.size() ? listFileString2.get(i) : "";
 
             if (!line_old.equals(line_new)) {
                 JsonObject object = new JsonObject();
@@ -92,11 +86,9 @@ public class RunCompare {
                 } else {
                     object.addProperty("change", "change");
                 }
-
                 array.add(object);
             }
         }
-
         return array;
     }
 }
