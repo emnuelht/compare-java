@@ -1,28 +1,28 @@
 {
-    "table": {
-        "coluna": {
+    "table_tb01": {
+        "coluna_cn01": {
             "type": "String",
             "length": 10,
             "default": "Nenhum"
         },
-        "coluna2": {
+        "coluna2_cn02": {
             "type": "String",
             "length": 2,
             "default": "Nenhum"
         },
-        "coluna3": {
+        "coluna3_cn03": {
             "type": "Timestamp",
             "length": "none",
             "default": "CURRENT TIMESTAMP"
         }
     },
-    "table2": {
-        "coluna2": {
+    "table2_tb02": {
+        "coluna2_cn04": {
             "type": "String",
             "length": 2,
             "default": "Nenhum"
         },
-        "coluna3": {
+        "coluna3_cn05": {
             "type": "Timestamp",
             "length": "none",
             "default": "CURRENT TIMESTAMP"

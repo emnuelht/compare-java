@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyStore.Entry;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
@@ -32,21 +29,40 @@ public class RunCompare {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(new File(fileURI1));
 
-        JsonArray array = compareFiles(fileURI1, fileURI2);
-        for (JsonElement element : array) {
-            JsonObject object = element.getAsJsonObject();
-            String line = object.get("line").getAsString();
-            String change = object.get("change").getAsString();
-            String valueNew = clearString(object.get("value-new").getAsString());
-            String valueOld = clearString(object.get("value-old").getAsString());
+        walk(node, "");
 
-            if (!valueOld.isEmpty() && !valueNew.isEmpty()) {
-                System.out.println("Line: " + line);
-                System.out.println("Change: " + change);
-                System.out.println("ValueNew: " + valueNew);
-                System.out.println("ValueOld: " + valueOld);
-                System.out.println();
+        // JsonArray array = compareFiles(fileURI1, fileURI2);
+        // for (JsonElement element : array) {
+        //     JsonObject object = element.getAsJsonObject();
+        //     String line = object.get("line").getAsString();
+        //     String change = object.get("change").getAsString();
+        //     String valueNew = clearString(object.get("value-new").getAsString());
+        //     String valueOld = clearString(object.get("value-old").getAsString());
+
+        //     System.out.println("Line: " + line);
+        //     System.out.println("Change: " + (valueNew.isEmpty() ? "Delete" : change));
+        //     System.out.println("ValueNew: " + valueNew);
+        //     System.out.println("ValueOld: " + valueOld);
+        //     System.out.println();
+        // }
+    }
+
+    private static void walk(JsonNode node, String path) {
+        if (node.isObject()) {
+            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String currentPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
+                walk(entry.getValue(), currentPath);
             }
+        } else if (node.isArray()) {
+            for (int i = 0; i < node.size(); i++) {
+                String currentPath = path + "[" + i + "]";
+                walk(node.get(i), currentPath);
+            }
+        } else {
+            // É um valor (string, number, boolean, null)
+            System.out.println("Path: " + path + " -> Value: " + node.toString());
         }
     }
 
@@ -80,11 +96,11 @@ public class RunCompare {
                 object.addProperty("value-new", line_new);
 
                 if (line_old.isEmpty()) {
-                    object.addProperty("change", "add");
+                    object.addProperty("change", "Add");
                 } else if (line_new.isEmpty()) {
-                    object.addProperty("change", "delete-value");
+                    object.addProperty("change", "Delete");
                 } else {
-                    object.addProperty("change", "change");
+                    object.addProperty("change", "Change");
                 }
                 array.add(object);
             }
