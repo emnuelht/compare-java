@@ -1,17 +1,12 @@
 {
     "table__tb01": {
-        "coluna__cn01": {
+        "col__cn01": {
             "type": "Stringaaaa",
             "length": 10,
             "default": "Nenhum"
         },
-        "coluna2__cn02": {
-            "type": "String",
-            "length": 2,
-            "default": "Nenhum"
-        },
         "coluna3__cn03": {
-            "type": "Timestamp",
+            "type": "1",
             "length": "none",
             "default": "CURRENT TIMESTAMP"
         }
