@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,44 +31,97 @@ public class RunCompare {
 
     public static void compareJson(String fileURI1, String fileURI2) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(new File(fileURI1));
+        JsonNode node1 = mapper.readTree(new File(fileURI1));
+        JsonNode node2 = mapper.readTree(new File(fileURI2));
 
-        walk(node, "");
+        List<String> listOld = walk(node1, "");
+        List<String> listNew = walk(node2, "");
 
-        // JsonArray array = compareFiles(fileURI1, fileURI2);
-        // for (JsonElement element : array) {
-        //     JsonObject object = element.getAsJsonObject();
-        //     String line = object.get("line").getAsString();
-        //     String change = object.get("change").getAsString();
-        //     String valueNew = clearString(object.get("value-new").getAsString());
-        //     String valueOld = clearString(object.get("value-old").getAsString());
+        int length = Math.max(listNew.size(), listOld.size());
 
-        //     System.out.println("Line: " + line);
-        //     System.out.println("Change: " + (valueNew.isEmpty() ? "Delete" : change));
-        //     System.out.println("ValueNew: " + valueNew);
-        //     System.out.println("ValueOld: " + valueOld);
-        //     System.out.println();
-        // }
+        Set<String> codTablesNew = new HashSet<>();
+        Set<String> codColumnsNew = new HashSet<>();
+        Set<String> nameTablesNew = new HashSet<>();
+        Set<String> nameColumnsNew = new HashSet<>();
+
+        for (String str : listNew) {
+            String[] cods = getCod(str, true);
+            String[] names = getCod(str, false);
+            codTablesNew.add(cods[0]);
+            codColumnsNew.add(cods[1]);
+            nameTablesNew.add(names[0]);
+            nameColumnsNew.add(names[1]);
+        }
+
+        for (int i = 0; i < length; i++) {
+            String codTable = getCod(listOld.get(i),true)[0];
+            String codColumn = getCod(listOld.get(i),true)[1];
+            String nameTable = getCod(listOld.get(i),false)[0];
+            String nameColumn = getCod(listOld.get(i),false)[1];
+
+            String oldValue = listOld.get(i);
+            String newValue = listNew.get(i);
+
+            if (!codTablesNew.contains(codTable)) {
+                System.out.println("Table com o id: " + codTable + " foi deletada");
+            } else if (!codColumnsNew.contains(codColumn)) {
+                System.out.println("Pai: " + codTable + ", column com o id: " + codColumn + " foi deletada");
+            } else if (!nameTablesNew.contains(nameTable) && codTablesNew.contains(codTable)) {
+                System.out.println("Table: " + nameTable + " foi modificada");
+            } else if (!nameColumnsNew.contains(nameColumn) && codColumnsNew.contains(codColumn)) {
+                System.out.println("Pai: " + codTable + ", column: " + nameColumn + " foi modificada para ");
+            } else if (!oldValue.equals(newValue)) {
+                System.out.println("mudança aqui mane " + oldValue + " para " + newValue);
+            }
+            break;
+        }
     }
 
-    private static void walk(JsonNode node, String path) {
+    private static String[] getCod(String string, boolean cod) {
+        String[] array = new String[3];
+        array[0] = "";array[1] = "";array[2] = "";
+        if (!string.isEmpty()) {
+            String[] strings = string.split("\\.");
+            String table = strings[0].length()>0?strings[0]:null;
+            String column = strings[1].length()>0?strings[1]:null;
+            String option = strings[2].length()>0?strings[2]:null;
+
+            int indexTable_ = table.indexOf("_");
+            String codTable = table.substring(indexTable_ + 2);
+
+            int indexColumn_ = column.indexOf("_");
+            String codColumn = column.substring(indexColumn_ + 2);
+            
+            array[0] = cod ? codTable : table;
+            array[1] = cod ? codColumn : column;
+            array[2] = option;
+            return array;
+        } else {
+            return array;
+        }
+    }
+
+    private static List<String> walk(JsonNode node, String path) {
+        List<String> paths = new ArrayList<>();
+
         if (node.isObject()) {
             Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> entry = fields.next();
                 String currentPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
-                walk(entry.getValue(), currentPath);
+                paths.addAll(walk(entry.getValue(), currentPath));
             }
         } else if (node.isArray()) {
             for (int i = 0; i < node.size(); i++) {
                 String currentPath = path + "[" + i + "]";
-                walk(node.get(i), currentPath);
+                paths.addAll(walk(node.get(i), currentPath));
             }
         } else {
-            // É um valor (string, number, boolean, null)
-            System.out.println("Path: " + path + " -> Value: " + node.toString());
+            paths.add(path + ":" + node.toString());
         }
+        return paths;
     }
+
 
     private static String clearString(String s) {
         if (s.contains(":") && s.contains("{")) {

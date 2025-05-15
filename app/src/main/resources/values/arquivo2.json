@@ -1,23 +1,16 @@
 {
-    "table_tb01": {
-        "coluna_cn01": {
-            "type": "String",
+    "table__tb01": {
+        "coluna__cn01": {
+            "type": "Stringaaaa",
             "length": 10,
             "default": "Nenhum"
         },
-        "coluna2_cn02": {
+        "coluna2__cn02": {
             "type": "String",
             "length": 2,
             "default": "Nenhum"
         },
-        "coluna3_cn03": {
-            "type": "Timestamp",
-            "length": "none",
-            "default": "CURRENT TIMESTAMP"
-        }
-    },
-    "table2_tb02": {
-        "coluna3_cn05": {
+        "coluna3__cn03": {
             "type": "Timestamp",
             "length": "none",
             "default": "CURRENT TIMESTAMP"

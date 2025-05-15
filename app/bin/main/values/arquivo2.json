@@ -1,26 +1,19 @@
 {
-    "table": {
-        "coluna": {
-            "type": "String",
+    "table__tb01": {
+        "coluna__cn01": {
+            "type": "Stringaaaa",
             "length": 10,
             "default": "Nenhum"
         },
-        "coluna2": {
-            "type": "Integer",
-            "length": 11,
-            "default": "Nenhum"
-        },
-        "manequinho": {
-            "type": "Timestamp",
-            "length": "none",
-            "default": "CURRENT TIMESTAMP"
-        }
-    },
-    "table2": {
-        "coluna2": {
+        "coluna2__cn02": {
             "type": "String",
             "length": 2,
             "default": "Nenhum"
+        },
+        "coluna3__cn03": {
+            "type": "Timestamp",
+            "length": "none",
+            "default": "CURRENT TIMESTAMP"
         }
     }
 }
